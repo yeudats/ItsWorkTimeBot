@@ -1,14 +1,14 @@
 import os
 import json
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 import gspread
 from google.oauth2.service_account import Credentials
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
-from telegram.ext import ApplicationBuilder
-import sys
-print("STARTUP python:", sys.version)
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
+
+
 load_dotenv()
 TOKEN = os.environ["TELEGRAM_TOKEN"]
 WEBHOOK_URL = os.environ["WEBHOOK_URL"]
@@ -72,8 +72,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
 
     if query.data == "enter":
-        enter_datetime = datetime.now()
+
+        enter_datetime = datetime.now(ZoneInfo("Asia/Jerusalem"))
+        
         client, sheet = get_sheet(enter_datetime.strftime("%m-%Y"))
+
         rows = sheet.get_all_values()
         new_row_index = len(rows) + 1
         sheet.update_cell(new_row_index, 1, enter_datetime.strftime('%d.%m.%Y'))
@@ -89,7 +92,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.edit_message_text("שגיאה: אין כניסה רשומה")
             return
 
-        exit_datetime = datetime.now()
+        exit_datetime = datetime.now(ZoneInfo("Asia/Jerusalem"))
         client, sheet = get_sheet(enter_datetime.strftime("%m-%Y"))
 
         total_delta = exit_datetime - enter_datetime

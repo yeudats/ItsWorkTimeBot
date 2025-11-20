@@ -128,8 +128,7 @@ def keepalive():
 @flask_app.route(f"/", methods=["POST"])
 def webhook():
     update = Update.de_json(request.get_json(force=True), telegram_app.bot)
-    loop = asyncio.get_running_loop()
-    asyncio.run_coroutine_threadsafe(telegram_app.update_queue.put(update), loop)
+    asyncio.run(telegram_app.update_queue.put(update))
     return Response("ok", status=200)
 
 def main():

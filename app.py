@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import gspread
 from google.oauth2.service_account import Credentials
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes, Dispatcher
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 from flask import Flask, request, Response
 
 load_dotenv()

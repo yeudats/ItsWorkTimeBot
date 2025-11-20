@@ -104,7 +104,7 @@ telegram_app.add_handler(CallbackQueryHandler(button_handler))
 def keepalive():
     return "Bot is running!", 200
 
-@flask_app.route(f"/{TOKEN}", methods=["POST"])
+@flask_app.route(f"/", methods=["POST"])
 def webhook():
     update = Update.de_json(request.get_json(force=True), telegram_app.bot)
     telegram_app.update_queue.put(update)

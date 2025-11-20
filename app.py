@@ -8,9 +8,6 @@ from google.oauth2.service_account import Credentials
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 
-from http.server import BaseHTTPRequestHandler, HTTPServer
-import threading
-
 
 
 load_dotenv()
@@ -120,27 +117,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 
-# ---- שרת קטן שיטפל ב־GET עבור Render / UptimeRobot ----
-class KeepAliveHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(b"Bot is running!")
-
-def start_keepalive_server():
-    port = 3000
-    server = HTTPServer(("0.0.0.0", port), KeepAliveHandler)
-    print(f"KeepAlive server running on port {port}")
-    server.serve_forever()
-
-
-
 def main():
 
-    # מפעיל שרת GET במקביל
-    threading.Thread(target=start_keepalive_server, daemon=True).start()
-
-    # מפעיל את הבוט (Webhook)
     app = ApplicationBuilder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
@@ -150,6 +128,7 @@ def main():
     app.run_webhook(
         listen="0.0.0.0",
         port=PORT,
+        url_path=TOKEN,
         webhook_url=WEBHOOK_URL
     )
 

@@ -128,7 +128,7 @@ class KeepAliveHandler(BaseHTTPRequestHandler):
         self.wfile.write(b"Bot is running!")
 
 def start_keepalive_server():
-    port = int(os.environ.get("PORT", 1000))
+    port = int(os.environ.get("PORT", 3000))
     server = HTTPServer(("0.0.0.0", port), KeepAliveHandler)
     print(f"KeepAlive server running on port {port}")
     server.serve_forever()

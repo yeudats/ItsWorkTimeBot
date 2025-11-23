@@ -163,7 +163,7 @@ def webhook():
 
         # שלח לעדכון ב-event loop
         future = asyncio.run_coroutine_threadsafe(
-            telegram_app.update_queue.put(update), 
+            telegram_app.process_update(update),
             event_loop
         )
         future.result(timeout=10)  # חכה לעד 10 שניות

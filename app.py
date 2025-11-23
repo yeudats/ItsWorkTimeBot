@@ -133,7 +133,13 @@ telegram_app = ApplicationBuilder().token(TOKEN).build()
 telegram_app.add_handler(CommandHandler("start", start))
 telegram_app.add_handler(CallbackQueryHandler(button_handler))
 
-
+# ---- Start telegram app ----
+asyncio.run_coroutine_threadsafe(telegram_app.initialize(), event_loop)
+asyncio.run_coroutine_threadsafe(telegram_app.start(), event_loop)
+asyncio.run_coroutine_threadsafe(
+    telegram_app.bot.set_webhook(WEBHOOK_URL),
+    event_loop
+)
 
 
 

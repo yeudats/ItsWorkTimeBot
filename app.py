@@ -116,6 +116,16 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         exit_datetime = ''
 
 
+# ---- Create event loop FIRST (לפני Application) ----
+event_loop = asyncio.new_event_loop()
+asyncio.set_event_loop(event_loop)
+
+def start_loop():
+    event_loop.run_forever()
+
+# Run the loop in background thread
+loop_thread = threading.Thread(target=start_loop, daemon=True)
+loop_thread.start()
 
 
 # ---- Telegram Application ----
@@ -124,15 +134,7 @@ telegram_app.add_handler(CommandHandler("start", start))
 telegram_app.add_handler(CallbackQueryHandler(button_handler))
 
 
-# ---- Create our own loop ----
-event_loop = asyncio.new_event_loop()
 
-def start_loop():
-    asyncio.set_event_loop(event_loop)
-    event_loop.run_forever()
-
-# Run the loop in background thread
-threading.Thread(target=start_loop, daemon=True).start()
 
 
 # ---- Flask Webserver ----
@@ -146,22 +148,29 @@ def keepalive():
 
 @flask_app.route("/", methods=["POST"])
 def webhook():
-    data = request.get_json(force=True)
-    update = Update.de_json(data, telegram_app.bot)
-    asyncio.run_coroutine_threadsafe(telegram_app.update_queue.put(update), event_loop)
+    try:
+        data = request.get_json(force=True)
+        print(f"Received update: {data}")
 
-    return Response("ok", status=200)
+        update = Update.de_json(data, telegram_app.bot)
+        print(f"Update object created: {update}")
+
+        # שלח לעדכון ב-event loop
+        future = asyncio.run_coroutine_threadsafe(
+            telegram_app.update_queue.put(update), 
+            event_loop
+        )
+        future.result(timeout=10)  # חכה לעד 10 שניות
+        
+        print("Update queued successfully")
+        return Response("ok", status=200)
+    except Exception as e:
+        print(f"Error in webhook: {type(e).__name__}: {e}")
+        import traceback
+        traceback.print_exc()
+        return Response(f"error: {e}", status=500)
 
 
-# ---- Create event loop ----
-event_loop = asyncio.new_event_loop()
-
-def start_loop():
-    asyncio.set_event_loop(event_loop)
-    event_loop.run_forever()
-
-# Run the loop in background thread
-threading.Thread(target=start_loop, daemon=True).start()
 
 
 if __name__ == "__main__":

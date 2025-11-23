@@ -146,16 +146,22 @@ def keepalive():
 
 @flask_app.route("/", methods=["POST"])
 def webhook():
-    update = Update.de_json(request.get_json(force=True), telegram_app.bot)
-
-    # כאן אנחנו קוראים ל-process_update רק כאשר מגיע update
-    asyncio.run_coroutine_threadsafe(
-        telegram_app.process_update(update),
-        event_loop
-    )
+    data = request.get_json(force=True)
+    update = Update.de_json(data, telegram_app.bot)
+    asyncio.run_coroutine_threadsafe(telegram_app.update_queue.put(update), event_loop)
 
     return Response("ok", status=200)
 
+
+# ---- Create event loop ----
+event_loop = asyncio.new_event_loop()
+
+def start_loop():
+    asyncio.set_event_loop(event_loop)
+    event_loop.run_forever()
+
+# Run the loop in background thread
+threading.Thread(target=start_loop, daemon=True).start()
 
 
 if __name__ == "__main__":

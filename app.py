@@ -115,27 +115,34 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         exit_datetime = ''
 
 
-# ---- Flask app ----
-flask_app = Flask(__name__)
+
+
+# ---- Telegram Application ----
 telegram_app = ApplicationBuilder().token(TOKEN).build()
 telegram_app.add_handler(CommandHandler("start", start))
 telegram_app.add_handler(CallbackQueryHandler(button_handler))
+
+
+# ---- Flask Webserver ----
+flask_app = Flask(__name__)
+
 
 @flask_app.route("/", methods=["GET"])
 def keepalive():
     return "Bot is running!", 200
 
-@flask_app.route(f"/", methods=["POST"])
+
+@flask_app.route("/", methods=["POST"])
 def webhook():
     update = Update.de_json(request.get_json(force=True), telegram_app.bot)
-    asyncio.run(telegram_app.update_queue.put(update))
+
+    # כאן אנחנו קוראים ל-process_update רק כאשר מגיע update
+    loop = asyncio.get_event_loop()
+    loop.create_task(telegram_app.process_update(update))
+
     return Response("ok", status=200)
 
-def main():
-    # קבע Webhook
-    telegram_app.bot.set_webhook(WEBHOOK_URL)
-    # הרץ Flask על אותו פורט
-    flask_app.run(host="0.0.0.0", port=PORT)
+
 
 if __name__ == "__main__":
-    main()
+    flask_app.run(host="0.0.0.0", port=PORT)

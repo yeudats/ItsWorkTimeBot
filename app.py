@@ -9,6 +9,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 from flask import Flask, request, Response
 import asyncio
+import threading
 
 load_dotenv()
 TOKEN = os.environ["TELEGRAM_TOKEN"]
@@ -123,6 +124,17 @@ telegram_app.add_handler(CommandHandler("start", start))
 telegram_app.add_handler(CallbackQueryHandler(button_handler))
 
 
+# ---- Create our own loop ----
+event_loop = asyncio.new_event_loop()
+
+def start_loop():
+    asyncio.set_event_loop(event_loop)
+    event_loop.run_forever()
+
+# Run the loop in background thread
+threading.Thread(target=start_loop, daemon=True).start()
+
+
 # ---- Flask Webserver ----
 flask_app = Flask(__name__)
 
@@ -137,8 +149,10 @@ def webhook():
     update = Update.de_json(request.get_json(force=True), telegram_app.bot)
 
     # כאן אנחנו קוראים ל-process_update רק כאשר מגיע update
-    loop = asyncio.get_event_loop()
-    loop.create_task(telegram_app.process_update(update))
+    asyncio.run_coroutine_threadsafe(
+        telegram_app.process_update(update),
+        event_loop
+    )
 
     return Response("ok", status=200)
 

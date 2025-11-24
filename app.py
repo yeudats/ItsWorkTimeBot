@@ -71,7 +71,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global enter_datetime, exit_datetime
     query = update.callback_query
-    await query.answer()
+    try:
+        await query.answer()
+    except Exception as e:
+        print(f"Error answering callback query: {e}")
+        return
+    
 
     if query.data == "enter":
 
@@ -81,7 +86,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         rows = sheet.get_all_values()
         new_row_index = len(rows) + 1
-        sheet.update_cell(new_row_index, 1, enter_datetime.strftime('%d.%m.%Y'))
+        sheet.update_cell(new_row_index, 1, enter_datetime.strftime('%d-%m-%Y'))
         sheet.update_cell(new_row_index, 2, enter_datetime.strftime('%H:%M'))
 
         await query.edit_message_text(
@@ -99,16 +104,15 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         total_delta = exit_datetime - enter_datetime
         total_minutes = int(total_delta.total_seconds() // 60)
-        decimal_hours = round(total_minutes / 60, 2)
+        total_hours = int(total_minutes // 60)
 
         rows = sheet.get_all_values()
         sheet.update_cell(len(rows), 3, exit_datetime.strftime("%H:%M"))
-        sheet.update_cell(len(rows), 4, decimal_hours)
 
         await query.edit_message_text(
             f'בוצעה כניסה בשעה {enter_datetime.strftime("%H:%M")}'
             f'\nבוצעה יציאה בשעה {exit_datetime.strftime("%H:%M")}'
-            f'\nסה"כ שעות עבודה: {decimal_hours}',
+            f'\nסה"כ שעות עבודה: {total_hours}',
             reply_markup=entrance_button()
         )
 

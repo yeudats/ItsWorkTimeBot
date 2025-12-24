@@ -86,9 +86,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         rows = sheet.get_all_values()
         new_row_index = len(rows) + 1
-        # sheet.update_cell(new_row_index, 1, enter_datetime.strftime('%d-%m-%Y'))
-        # sheet.update_cell(new_row_index, 2, enter_datetime.strftime('%H:%M'))
-        sheet.update_cell(new_row_index, 2, enter_datetime.strftime('%d/%m/%Y %H:%M'))
+        sheet.update_cell(new_row_index, 1, enter_datetime.strftime('%d-%m-%Y'))
+        sheet.update_cell(new_row_index, 2, enter_datetime.strftime('%H:%M'))
 
         await query.edit_message_text(
             f"בוצעה כניסה בשעה {enter_datetime.strftime('%H:%M')}",
@@ -108,8 +107,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         total_hours = int(total_minutes // 60)
 
         rows = sheet.get_all_values()
-        # sheet.update_cell(len(rows), 3, exit_datetime.strftime("%H:%M"))
-        sheet.update_cell(len(rows), 3, exit_datetime.strftime('%d/%m/%Y %H:%M'))
+        sheet.update_cell(len(rows), 3, exit_datetime.strftime("%H:%M"))
+        
 
         await query.edit_message_text(
             f'בוצעה כניסה בשעה {enter_datetime.strftime("%H:%M")}'
@@ -162,10 +161,9 @@ def keepalive():
 def webhook():
     try:
         data = request.get_json(force=True)
-        print(f"Received update: {data}")
 
         update = Update.de_json(data, telegram_app.bot)
-        print(f"Update object created: {update}")
+        
 
         # שלח לעדכון ב-event loop
         future = asyncio.run_coroutine_threadsafe(
@@ -174,7 +172,7 @@ def webhook():
         )
         future.result(timeout=10)  # חכה לעד 10 שניות
         
-        print("Update queued successfully")
+        
         return Response("ok", status=200)
     except Exception as e:
         print(f"Error in webhook: {type(e).__name__}: {e}")

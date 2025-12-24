@@ -86,8 +86,9 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         rows = sheet.get_all_values()
         new_row_index = len(rows) + 1
-        sheet.update_cell(new_row_index, 1, enter_datetime.strftime('%d-%m-%Y'))
-        sheet.update_cell(new_row_index, 2, enter_datetime.strftime('%H:%M'))
+        # sheet.update_cell(new_row_index, 1, enter_datetime.strftime('%d-%m-%Y'))
+        # sheet.update_cell(new_row_index, 2, enter_datetime.strftime('%H:%M'))
+        sheet.update_cell(new_row_index, 2, enter_datetime)
 
         await query.edit_message_text(
             f"בוצעה כניסה בשעה {enter_datetime.strftime('%H:%M')}",
@@ -107,12 +108,13 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         total_hours = int(total_minutes // 60)
 
         rows = sheet.get_all_values()
-        sheet.update_cell(len(rows), 3, exit_datetime.strftime("%H:%M"))
+        # sheet.update_cell(len(rows), 3, exit_datetime.strftime("%H:%M"))
+        sheet.update_cell(len(rows), 3, exit_datetime)
 
         await query.edit_message_text(
             f'בוצעה כניסה בשעה {enter_datetime.strftime("%H:%M")}'
             f'\nבוצעה יציאה בשעה {exit_datetime.strftime("%H:%M")}'
-            f'\nסה"כ שעות עבודה: {total_hours}',
+            f'\nסה"כ שעות עבודה: {total_hours}:{total_minutes % 60:02d}',
             reply_markup=entrance_button()
         )
 
